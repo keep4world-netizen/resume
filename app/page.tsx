@@ -10,6 +10,9 @@ export default function Home() {
       </p>
       <Link href="/apply" className="btn primary">
         شروع تکمیل فرم
+      </Link>{" "}
+      <Link href="/track" className="btn">
+        پیگیری درخواست
       </Link>
     </main>
   );

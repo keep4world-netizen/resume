@@ -209,7 +209,7 @@ export default function ApplyForm() {
         <h2>فرم شما ثبت شد</h2>
         <p>کد پیگیری خود را نگه دارید:</p>
         <div className="code">{code}</div>
-        <p className="muted">با همین کد می‌توانید در آینده از وضعیت درخواست خود سؤال کنید.</p>
+        <p className="muted">با این کد و کد ملی خود می‌توانید از صفحه <a href="/track">پیگیری درخواست</a> وضعیت را ببینید.</p>
       </div>
     );
   }
