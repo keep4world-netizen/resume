@@ -10,3 +10,6 @@ Next.js + Prisma (Postgres) + Vercel Blob. رابط فارسی، راست‌به
 ## متغیرهای محیطی
 - `DATABASE_URL`: رشته اتصال Postgres
 - `BLOB_READ_WRITE_TOKEN`: توکن Vercel Blob (برای عکس پرسنلی)
+
+## پنل ادمین
+آدرس: `/admin`. متغیرهای `ADMIN_USER`، `ADMIN_PASSWORD` و `ADMIN_SECRET` را در تنظیمات ورسل (Environment Variables) اضافه کنید و Redeploy بزنید.

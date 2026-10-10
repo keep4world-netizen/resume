@@ -56,3 +56,30 @@ input:focus, select:focus, textarea:focus, .btn:focus-visible { outline: 2px sol
 .sum dd { margin: 0; }
 .code { font-size: 1.8rem; font-weight: 700; direction: ltr; letter-spacing: 2px; margin: 12px 0; color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .bar > div { transition: none; } }
+
+/* admin */
+.abar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.abtitle { font-weight: 700; font-size: 1.15rem; color: var(--ink); text-decoration: none; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.filters input[type="text"] { flex: 1 1 260px; width: auto; }
+.filters select { width: auto; }
+.scroll { overflow-x: auto; }
+.list { width: 100%; border-collapse: collapse; background: var(--paper); font-size: 0.92rem; }
+.list th, .list td { border: 1px solid var(--line); padding: 8px 10px; text-align: right; vertical-align: top; }
+.list th { background: #e6ebf1; font-weight: 600; white-space: nowrap; }
+.list a { color: var(--accent); }
+.badge { display: inline-block; padding: 1px 10px; border-radius: 10px; font-size: 0.82rem; background: #e6ebf1; }
+.badge.NEW { background: #dbe8f7; }
+.badge.REVIEW { background: #fdf0cf; }
+.badge.INTERVIEW { background: #e2dcf5; }
+.badge.REJECTED { background: #f7dcda; }
+.badge.HIRED { background: #d6efe3; }
+.top { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.pic { width: 96px; height: 124px; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); }
+input[type="password"] { font: inherit; width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; }
+@media print {
+  .noprint { display: none !important; }
+  body { background: #fff; }
+  .card { border: 1px solid #999; break-inside: avoid; }
+  .wrap { max-width: 100%; padding: 0; }
+}
