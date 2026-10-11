@@ -15,6 +15,7 @@ model Application {
   nationalCode String
   phone        String
   photoUrl     String?
+  photo        String?  @db.Text
   status       String   @default("NEW")
   note         String?
   data         Json

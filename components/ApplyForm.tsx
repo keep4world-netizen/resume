@@ -46,6 +46,8 @@ export default function ApplyForm() {
   const [msg, setMsg] = useState("");
   const [code, setCode] = useState("");
   const [agree, setAgree] = useState(false);
+  const [ph, setPh] = useState<{ stage: string; pct: number; msg: string }>({ stage: "idle", pct: 0, msg: "" });
+  const [pct, setPct] = useState(0);
   const reviewIndex = steps.length;
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function ApplyForm() {
       if (d) {
         const p = JSON.parse(d);
         setV(p.v || {});
+        if (p.v?.photo) setPh({ stage: "done", pct: 100, msg: "عکس آماده است." });
         setI(Math.min(p.i || 0, reviewIndex));
       }
     } catch {}
@@ -92,14 +95,84 @@ export default function ApplyForm() {
     window.scrollTo({ top: 0 });
   }
 
-  async function uploadPhoto(file: File) {
-    setMsg("");
-    const fd = new FormData();
-    fd.append("file", file);
-    const r = await fetch("/api/upload", { method: "POST", body: fd });
-    const j = await r.json().catch(() => ({}));
-    if (r.ok) set("photoUrl", j.url);
-    else setMsg(j.error || "آپلود عکس انجام نشد.");
+  function readFile(file: File): Promise<string> {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result));
+      r.onerror = () => rej(new Error("read"));
+      r.readAsDataURL(file);
+    });
+  }
+
+  function loadImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = () => rej(new Error("img"));
+      im.src = url;
+    });
+  }
+
+  async function pickPhoto(file: File) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setPh({ stage: "error", pct: 0, msg: "فقط عکس JPG، PNG یا WebP مجاز است." });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setPh({ stage: "error", pct: 0, msg: "حجم عکس بیشتر از ۱۰ مگابایت است." });
+      return;
+    }
+    try {
+      setPh({ stage: "work", pct: 15, msg: "در حال خواندن عکس..." });
+      const url = await readFile(file);
+      setPh({ stage: "work", pct: 50, msg: "در حال بهینه‌سازی عکس..." });
+      const img = await loadImage(url);
+      const k = Math.min(1, 800 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * k);
+      c.height = Math.round(img.height * k);
+      const ctx = c.getContext("2d")!;
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      setPh({ stage: "work", pct: 85, msg: "در حال آماده‌سازی..." });
+      let q = 0.85;
+      let out = c.toDataURL("image/jpeg", q);
+      while (out.length > 350_000 && q > 0.4) {
+        q -= 0.1;
+        out = c.toDataURL("image/jpeg", q);
+      }
+      set("photo", out);
+      setPh({ stage: "done", pct: 100, msg: "عکس با موفقیت آماده شد." });
+    } catch {
+      setPh({ stage: "error", pct: 0, msg: "عکس خوانده نشد. عکس دیگری انتخاب کنید." });
+    }
+  }
+
+  function post(body: any, onP: (n: number) => void): Promise<{ ok: boolean; json: any }> {
+    return new Promise((res) => {
+      const x = new XMLHttpRequest();
+      x.open("POST", "/api/apply");
+      x.setRequestHeader("Content-Type", "application/json");
+      x.upload.onprogress = (e) => {
+        if (e.lengthComputable) onP(Math.round((e.loaded / e.total) * 100));
+      };
+      x.onload = () => {
+        let j: any = {};
+        try {
+          j = JSON.parse(x.responseText);
+        } catch {}
+        res({ ok: x.status >= 200 && x.status < 300, json: j });
+      };
+      x.onerror = () => res({ ok: false, json: { error: "ارتباط با سرور برقرار نشد. اتصال اینترنت را بررسی کنید." } });
+      x.send(JSON.stringify(body));
+    });
+  }
+
+  function cleaned() {
+    const out: any = { ...v };
+    for (const st of steps) for (const f of st.fields || []) if (f.showIf && !f.showIf(v)) delete out[f.name];
+    return out;
   }
 
   async function submit() {
@@ -110,23 +183,15 @@ export default function ApplyForm() {
       }
     }
     setBusy(true);
+    setPct(0);
     setMsg("");
-    try {
-      const r = await fetch("/api/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: v }),
-      });
-      const j = await r.json().catch(() => ({}));
-      if (r.ok) {
-        setCode(j.trackingCode);
-        try {
-          localStorage.removeItem(KEY);
-        } catch {}
-      } else setMsg(j.error || "ارسال انجام نشد. دوباره تلاش کنید.");
-    } catch {
-      setMsg("ارتباط با سرور برقرار نشد. اتصال اینترنت را بررسی کنید.");
-    }
+    const r = await post({ data: cleaned() }, setPct);
+    if (r.ok) {
+      setCode(r.json.trackingCode || "ok");
+      try {
+        localStorage.removeItem(KEY);
+      } catch {}
+    } else setMsg(r.json.error || "ارسال انجام نشد. دوباره تلاش کنید.");
     setBusy(false);
   }
 
@@ -176,7 +241,38 @@ export default function ApplyForm() {
       input = (
         <div className="photo">
           {value && <img src={value} alt="عکس پرسنلی" />}
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])} />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => e.target.files?.[0] && pickPhoto(e.target.files[0])}
+            />
+            {ph.stage === "work" && (
+              <>
+                <div className="bar" style={{ marginTop: 8 }}>
+                  <div style={{ width: `${ph.pct}%` }} />
+                </div>
+                <div className="pstat">
+                  {ph.msg} {ph.pct}٪
+                </div>
+              </>
+            )}
+            {ph.stage === "done" && <div className="pstat ok">✓ {ph.msg}</div>}
+            {ph.stage === "error" && <div className="pstat bad">{ph.msg}</div>}
+            {value && ph.stage !== "work" && (
+              <button
+                type="button"
+                className="btn"
+                style={{ marginTop: 8, padding: "4px 12px" }}
+                onClick={() => {
+                  onChange("");
+                  setPh({ stage: "idle", pct: 0, msg: "" });
+                }}
+              >
+                حذف عکس
+              </button>
+            )}
+          </div>
         </div>
       );
     } else {
@@ -207,9 +303,11 @@ export default function ApplyForm() {
     return (
       <div className="card center">
         <h2>فرم شما ثبت شد</h2>
-        <p>کد پیگیری خود را نگه دارید:</p>
-        <div className="code">{code}</div>
-        <p className="muted">با این کد و کد ملی خود می‌توانید از صفحه <a href="/track">پیگیری درخواست</a> وضعیت را ببینید.</p>
+        <p>کد پیگیری شما همان کد ملی شماست:</p>
+        <div className="code">{toEnDigits(String(v.nationalCode || ""))}</div>
+        <p className="muted">
+          برای دیدن وضعیت درخواست از صفحه <a href="/track">پیگیری درخواست</a> استفاده کنید.
+        </p>
       </div>
     );
   }
@@ -309,6 +407,11 @@ export default function ApplyForm() {
       )}
 
       {msg && <div className="err box">{msg}</div>}
+      {busy && (
+        <div className="bar" style={{ marginTop: 12 }}>
+          <div style={{ width: `${pct}%` }} />
+        </div>
+      )}
 
       <div className="nav">
         {i > 0 && (
@@ -317,7 +420,7 @@ export default function ApplyForm() {
           </button>
         )}
         {i < reviewIndex - 1 && (
-          <button className="btn primary" onClick={() => validate(i) && go(i + 1)}>
+          <button className="btn primary" onClick={() => validate(i) && go(i + 1)} disabled={ph.stage === "work"}>
             بعدی
           </button>
         )}
@@ -328,7 +431,7 @@ export default function ApplyForm() {
         )}
         {i === reviewIndex && (
           <button className="btn primary" onClick={submit} disabled={busy || !agree}>
-            {busy ? "در حال ارسال..." : "ارسال فرم"}
+            {busy ? (pct < 100 ? `در حال ارسال... ${pct}٪` : "در حال ثبت...") : "ارسال فرم"}
           </button>
         )}
       </div>

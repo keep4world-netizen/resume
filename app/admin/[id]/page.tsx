@@ -25,7 +25,7 @@ export default async function Detail({ params }: { params: { id: string } }) {
 
       <section className="card">
         <div className="top">
-          {a.photoUrl && <img className="pic" src={a.photoUrl} alt="عکس پرسنلی" />}
+          {a.photo && <img className="pic" src={a.photo} alt="عکس پرسنلی" />}
           <div>
             <h1>
               {a.firstName} {a.lastName}

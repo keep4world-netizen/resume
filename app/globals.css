@@ -83,3 +83,9 @@ input[type="password"] { font: inherit; width: 100%; padding: 9px 10px; border: 
   .card { border: 1px solid #999; break-inside: avoid; }
   .wrap { max-width: 100%; padding: 0; }
 }
+
+/* photo */
+.photo { flex-wrap: wrap; align-items: flex-start; }
+.pstat { font-size: 0.9rem; margin-top: 6px; }
+.pstat.ok { color: var(--accent); }
+.pstat.bad { color: var(--danger); }

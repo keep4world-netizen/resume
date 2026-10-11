@@ -5,9 +5,21 @@ import { toEnDigits, validMobile, validNationalCode } from "@/lib/utils";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
-  const data = body?.data;
-  if (!data || typeof data !== "object" || JSON.stringify(data).length > 200_000) {
+  const all = body?.data;
+  if (!all || typeof all !== "object") {
     return NextResponse.json({ error: "اطلاعات ارسالی نامعتبر است." }, { status: 400 });
+  }
+  const { photo, photoUrl, ...data } = all as any;
+  if (JSON.stringify(data).length > 200_000) {
+    return NextResponse.json({ error: "حجم اطلاعات ارسالی زیاد است." }, { status: 400 });
+  }
+
+  let photoData: string | null = null;
+  if (photo) {
+    if (typeof photo !== "string" || photo.length > 500_000 || !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photo)) {
+      return NextResponse.json({ error: "عکس نامعتبر یا حجیم است. عکس دیگری انتخاب کنید." }, { status: 400 });
+    }
+    photoData = photo;
   }
 
   const firstName = String(data.firstName || "").trim();
@@ -33,7 +45,7 @@ export async function POST(req: Request) {
       lastName,
       nationalCode,
       phone,
-      photoUrl: data.photoUrl ? String(data.photoUrl) : null,
+      photo: photoData,
       data: { ...data, nationalCode, phone },
     },
   });
