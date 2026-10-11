@@ -303,10 +303,10 @@ export default function ApplyForm() {
     return (
       <div className="card center">
         <h2>فرم شما ثبت شد</h2>
-        <p>کد پیگیری شما همان کد ملی شماست:</p>
-        <div className="code">{toEnDigits(String(v.nationalCode || ""))}</div>
+        <p>کد پیگیری شما:</p>
+        <div className="code">{code}</div>
         <p className="muted">
-          برای دیدن وضعیت درخواست از صفحه <a href="/track">پیگیری درخواست</a> استفاده کنید.
+          این کد را یادداشت کنید. برای دیدن وضعیت درخواست از صفحه <a href="/track">پیگیری درخواست</a> با کد ملی و این کد وارد شوید.
         </p>
       </div>
     );

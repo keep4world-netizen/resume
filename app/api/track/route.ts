@@ -6,17 +6,17 @@ import { fa } from "@/lib/query";
 
 export async function POST(req: Request) {
   const b = await req.json().catch(() => null);
-  const code = toEnDigits(String(b?.code || "")).trim().toUpperCase();
   const nc = toEnDigits(String(b?.nationalCode || "")).trim();
-  if (!code || !nc) {
-    return NextResponse.json({ error: "کد پیگیری و کد ملی را وارد کنید." }, { status: 400 });
+  const code = toEnDigits(String(b?.code || "")).trim().toUpperCase();
+  if (!/^\d{10}$/.test(nc) || !code) {
+    return NextResponse.json({ error: "کد ملی (ده رقم) و کد پیگیری را وارد کنید." }, { status: 400 });
   }
-  const a = await prisma.application.findUnique({
-    where: { trackingCode: code },
-    select: { nationalCode: true, status: true, createdAt: true, firstName: true },
+  const a = await prisma.application.findFirst({
+    where: { nationalCode: nc, trackingCode: code },
+    select: { status: true, createdAt: true, firstName: true },
   });
-  if (!a || a.nationalCode !== nc) {
-    return NextResponse.json({ error: "اطلاعات واردشده با هیچ درخواستی مطابقت ندارد." }, { status: 404 });
+  if (!a) {
+    return NextResponse.json({ error: "کد ملی یا کد پیگیری درست نیست." }, { status: 404 });
   }
   return NextResponse.json({
     firstName: a.firstName,

@@ -4,8 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 
 export default function Track() {
-  const [code, setCode] = useState("");
   const [nc, setNc] = useState("");
+  const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [res, setRes] = useState<any>(null);
@@ -18,7 +18,7 @@ export default function Track() {
       const r = await fetch("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, nationalCode: nc }),
+        body: JSON.stringify({ nationalCode: nc, code }),
       });
       const j = await r.json().catch(() => ({}));
       if (r.ok) setRes(j);
@@ -34,12 +34,12 @@ export default function Track() {
       <h1>پیگیری درخواست</h1>
       <div className="card" style={{ marginTop: 16 }}>
         <div className="field">
-          <label className="lbl">کد پیگیری</label>
-          <input type="text" className="ltr" placeholder="RZ-XXXXXXXX" value={code} onChange={(e) => setCode(e.target.value)} />
-        </div>
-        <div className="field" style={{ marginTop: 12 }}>
           <label className="lbl">کد ملی</label>
           <input type="text" className="ltr" inputMode="numeric" value={nc} onChange={(e) => setNc(e.target.value)} />
+        </div>
+        <div className="field" style={{ marginTop: 12 }}>
+          <label className="lbl">کد پیگیری (کدی که بعد از ثبت فرم دریافت کردید)</label>
+          <input type="text" className="ltr" inputMode="numeric" value={code} onChange={(e) => setCode(e.target.value)} />
         </div>
         {err && <div className="err box">{err}</div>}
         <button className="btn primary" style={{ marginTop: 16 }} onClick={check} disabled={busy}>

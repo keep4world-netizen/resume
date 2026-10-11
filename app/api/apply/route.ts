@@ -1,7 +1,19 @@
 import { NextResponse } from "next/server";
-import { randomBytes } from "crypto";
+import { randomInt } from "crypto";
 import { prisma } from "@/lib/db";
 import { toEnDigits, validMobile, validNationalCode } from "@/lib/utils";
+
+async function newCode(): Promise<string> {
+  // ابتدا کد ۴ رقمی؛ اگر پر شده بود ۵ رقمی
+  for (const [min, span] of [[1000, 9000], [10000, 90000]]) {
+    for (let i = 0; i < 30; i++) {
+      const c = String(min + randomInt(span));
+      const used = await prisma.application.findUnique({ where: { trackingCode: c }, select: { id: true } });
+      if (!used) return c;
+    }
+  }
+  return String(100000 + randomInt(900000));
+}
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -37,18 +49,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "شماره موبایل معتبر نیست (مثال: 09121234567)." }, { status: 400 });
   }
 
-  const trackingCode = "RZ-" + randomBytes(4).toString("hex").toUpperCase();
-  await prisma.application.create({
-    data: {
-      trackingCode,
-      firstName,
-      lastName,
-      nationalCode,
-      phone,
-      photo: photoData,
-      data: { ...data, nationalCode, phone },
-    },
-  });
+  let trackingCode = "";
+  for (let attempt = 0; attempt < 5; attempt++) {
+    trackingCode = await newCode();
+    try {
+      await prisma.application.create({
+        data: {
+          trackingCode,
+          firstName,
+          lastName,
+          nationalCode,
+          phone,
+          photo: photoData,
+          data: { ...data, nationalCode, phone },
+        },
+      });
+      break;
+    } catch (e: any) {
+      if (e?.code !== "P2002" || attempt === 4) throw e;
+    }
+  }
 
   return NextResponse.json({ trackingCode });
 }
