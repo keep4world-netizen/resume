@@ -78,6 +78,13 @@ export default function ApplyForm() {
       const val = String(v[f.name] ?? "").trim();
       if (f.required && !val) e[f.name] = "این فیلد الزامی است.";
     }
+    for (const t of s?.tables || []) {
+      for (let r = 0; r < (t.requiredRows || 0); r++) {
+        for (const c of t.cols) {
+          if (c.required && !String(v[t.name]?.[r]?.[c.name] ?? "").trim()) e[`${t.name}.${r}.${c.name}`] = "الزامی است.";
+        }
+      }
+    }
     if (index === 0) {
       const nc = toEnDigits(String(v.nationalCode || ""));
       const ph = toEnDigits(String(v.phone || ""));
@@ -86,6 +93,9 @@ export default function ApplyForm() {
     }
     if (v.email && !/^\S+@\S+\.\S+$/.test(String(v.email))) e.email = "ایمیل معتبر نیست.";
     setErr(e);
+    if (Object.keys(e).length) {
+      setTimeout(() => document.querySelector(".err")?.scrollIntoView({ block: "center", behavior: "smooth" }), 50);
+    }
     return Object.keys(e).length === 0;
   }
 
@@ -345,7 +355,10 @@ export default function ApplyForm() {
                     <div className="grid">
                       {t.cols.map((c) => (
                         <div className="field" key={c.name}>
-                          <label className="lbl">{c.label}</label>
+                          <label className="lbl">
+                            {c.label}
+                            {c.required && r < (t.requiredRows || 0) && <span className="req"> *</span>}
+                          </label>
                           {renderField(
                             c,
                             rows[r]?.[c.name],
@@ -357,6 +370,7 @@ export default function ApplyForm() {
                             undefined,
                             true
                           )}
+                          {err[`${t.name}.${r}.${c.name}`] && <div className="err">{err[`${t.name}.${r}.${c.name}`]}</div>}
                         </div>
                       ))}
                     </div>

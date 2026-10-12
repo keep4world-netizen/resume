@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { STATUS } from "@/lib/status";
+import { STATUS, normStatus } from "@/lib/status";
 import { fa } from "@/lib/query";
 import { steps } from "@/lib/formConfig";
 import { fmt, rowsOf } from "@/lib/format";
@@ -34,7 +34,7 @@ export default async function Detail({ params }: { params: { id: string } }) {
               کد پیگیری: <span className="ltr">{a.trackingCode}</span> · ثبت‌شده در {fa(a.createdAt)}
             </div>
             <div style={{ marginTop: 6 }}>
-              <span className={`badge ${a.status}`}>{STATUS[a.status] || a.status}</span>
+              <span className={`badge ${normStatus(a.status)}`}>{STATUS[normStatus(a.status)] || normStatus(a.status)}</span>
             </div>
           </div>
           <div style={{ marginRight: "auto" }}>
@@ -47,7 +47,7 @@ export default async function Detail({ params }: { params: { id: string } }) {
         <h2>وضعیت و یادداشت داخلی</h2>
         <div className="field">
           <label className="lbl">وضعیت</label>
-          <select name="status" defaultValue={a.status}>
+          <select name="status" defaultValue={normStatus(a.status)}>
             {Object.entries(STATUS).map(([k, l]) => (
               <option key={k} value={k}>
                 {l}

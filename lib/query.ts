@@ -3,7 +3,7 @@ import { STATUS } from "@/lib/status";
 
 export function buildWhere(q?: string, status?: string) {
   const where: any = {};
-  if (status && STATUS[status]) where.status = status;
+  if (status && STATUS[status]) where.status = status === "REVIEW" ? { in: ["REVIEW", "NEW"] } : status;
   const t = (q || "").trim();
   if (t) {
     const d = toEnDigits(t);

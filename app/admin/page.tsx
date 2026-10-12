@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { STATUS } from "@/lib/status";
+import { STATUS, normStatus } from "@/lib/status";
 import { buildWhere, fa } from "@/lib/query";
 import AdminBar from "@/components/AdminBar";
 
@@ -85,7 +85,7 @@ export default async function Admin({
                 <td className="ltr">{a.phone}</td>
                 <td>{fa(a.createdAt)}</td>
                 <td>
-                  <span className={`badge ${a.status}`}>{STATUS[a.status] || a.status}</span>
+                  <span className={`badge ${normStatus(a.status)}`}>{STATUS[normStatus(a.status)] || normStatus(a.status)}</span>
                 </td>
               </tr>
             ))}

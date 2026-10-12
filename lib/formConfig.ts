@@ -7,7 +7,7 @@ export type Field = {
   ltr?: boolean;
   showIf?: (v: any) => boolean;
 };
-export type Table = { name: string; title: string; rows: number; cols: Field[] };
+export type Table = { name: string; title: string; rows: number; requiredRows?: number; cols: Field[] };
 export type ListBlock = { name: string; title: string; count: number };
 export type Step = {
   title: string;
@@ -66,8 +66,8 @@ export const steps: Step[] = [
   {
     title: "وضعیت جسمانی و بیمه",
     fields: [
-      { name: "height", label: "قد (سانتی‌متر)", type: "number" },
-      { name: "weight", label: "وزن (کیلوگرم)", type: "number" },
+      { name: "height", label: "قد (سانتی‌متر)", type: "number", required: true },
+      { name: "weight", label: "وزن (کیلوگرم)", type: "number", required: true },
       { name: "health", label: "وضعیت جسمانی", type: "radio", options: ["سالم", "معلول"] },
       { name: "disability", label: "نوع معلولیت", showIf: (v) => v.health === "معلول" },
       { name: "insured", label: "سابقه بیمه", type: "radio", options: ["ندارم", "دارم"] },
@@ -101,6 +101,7 @@ export const steps: Step[] = [
       {
         name: "eduLevel",
         label: "وضعیت تحصیلی",
+        required: true,
         type: "radio",
         options: ["پایان راهنمایی", "دیپلم", "کاردانی", "کارشناسی", "کارشناسی ارشد", "دکترا"],
       },
@@ -110,10 +111,11 @@ export const steps: Step[] = [
         name: "education",
         title: "سوابق تحصیلی",
         rows: 2,
+        requiredRows: 1,
         cols: [
-          { name: "degree", label: "نوع مدرک تحصیلی" },
-          { name: "field", label: "رشته و گرایش" },
-          { name: "school", label: "نام محل تحصیل" },
+          { name: "degree", label: "نوع مدرک تحصیلی", required: true },
+          { name: "field", label: "رشته و گرایش", required: true },
+          { name: "school", label: "نام محل تحصیل", required: true },
           { name: "province", label: "استان محل تحصیل" },
           { name: "city", label: "شهر محل تحصیل" },
           { name: "year", label: "سال اخذ", ltr: true },
@@ -150,11 +152,12 @@ export const steps: Step[] = [
         name: "work",
         title: "سوابق کاری (از آخرین سابقه شروع کنید)",
         rows: 3,
+        requiredRows: 1,
         cols: [
-          { name: "company", label: "نام مؤسسه" },
+          { name: "company", label: "نام مؤسسه", required: true },
           { name: "companyPhone", label: "تلفن مؤسسه", ltr: true },
           { name: "activity", label: "نوع فعالیت مؤسسه" },
-          { name: "title", label: "عنوان شغل" },
+          { name: "title", label: "عنوان شغل", required: true },
           { name: "salary", label: "حقوق دریافتی", ltr: true },
           { name: "from", label: "از (شمسی)", ltr: true },
           { name: "to", label: "تا (شمسی)", ltr: true },
@@ -169,13 +172,14 @@ export const steps: Step[] = [
     title: "شغل مورد علاقه و شرایط کاری",
     fields: [
       { name: "interest", label: "در خصوص مشاغل مورد علاقه خود توضیح دهید", type: "textarea" },
-      { name: "employed", label: "آیا در حال حاضر شاغل هستید؟", type: "radio", options: yesNo },
+      { name: "employed", label: "آیا در حال حاضر شاغل هستید؟", type: "radio", options: yesNo, required: true },
       { name: "unemployedFor", label: "چه مدت بیکار هستید؟", showIf: (v) => v.employed === "خیر" },
       { name: "workAddress", label: "آدرس و مشخصات محل کار", showIf: (v) => v.employed === "بلی" },
       { name: "changeReason", label: "به چه دلیل تمایل به تغییر شغل دارید؟", showIf: (v) => v.employed === "بلی" },
       {
         name: "shifts",
         label: "ساعات کار مورد نظر",
+        required: true,
         type: "checks",
         options: ["وقت اداری", "فقط عصرها", "فقط شب", "سه شیفت", "پاره وقت", "در طول روز", "فرقی نمی‌کند"],
       },
@@ -190,16 +194,16 @@ export const steps: Step[] = [
   {
     title: "آدرس و تماس",
     fields: [
-      { name: "province", label: "استان" },
-      { name: "city", label: "شهرستان" },
+      { name: "province", label: "استان", required: true },
+      { name: "city", label: "شهرستان", required: true },
       { name: "district", label: "محدوده" },
-      { name: "street", label: "خیابان" },
+      { name: "street", label: "خیابان", required: true },
       { name: "alley", label: "کوچه" },
-      { name: "plate", label: "پلاک", ltr: true },
+      { name: "plate", label: "پلاک", ltr: true, required: true },
       { name: "unit", label: "واحد", ltr: true },
       { name: "floor", label: "طبقه", ltr: true },
       { name: "postal", label: "کد پستی ده رقمی", ltr: true },
-      { name: "homePhone", label: "تلفن", ltr: true },
+      { name: "homePhone", label: "تلفن", ltr: true, required: true },
       { name: "email", label: "پست الکترونیکی", ltr: true },
     ],
   },

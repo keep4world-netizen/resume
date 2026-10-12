@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/db";
-import { STATUS } from "@/lib/status";
+import { STATUS, normStatus } from "@/lib/status";
 import { buildWhere, fa } from "@/lib/query";
 import { steps } from "@/lib/formConfig";
 import { fmt, tableText } from "@/lib/format";
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
     const row: Record<string, string> = {
       tracking: a.trackingCode,
       date: fa(a.createdAt),
-      status: STATUS[a.status] || a.status,
+      status: STATUS[normStatus(a.status)] || normStatus(a.status),
       note: a.note || "",
     };
     for (const s of steps) {

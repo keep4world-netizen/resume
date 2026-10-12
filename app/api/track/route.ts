@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { toEnDigits } from "@/lib/utils";
-import { STATUS, APPLICANT_TEXT } from "@/lib/status";
+import { STATUS, APPLICANT_TEXT, normStatus } from "@/lib/status";
 import { fa } from "@/lib/query";
 
 export async function POST(req: Request) {
@@ -20,8 +20,8 @@ export async function POST(req: Request) {
   }
   return NextResponse.json({
     firstName: a.firstName,
-    status: STATUS[a.status] || a.status,
-    text: APPLICANT_TEXT[a.status] || "",
+    status: STATUS[normStatus(a.status)] || normStatus(a.status),
+    text: APPLICANT_TEXT[normStatus(a.status)] || "",
     date: fa(a.createdAt),
   });
 }

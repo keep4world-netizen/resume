@@ -56,6 +56,7 @@ export async function POST(req: Request) {
       await prisma.application.create({
         data: {
           trackingCode,
+          status: "REVIEW",
           firstName,
           lastName,
           nationalCode,

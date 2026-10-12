@@ -16,7 +16,7 @@ model Application {
   phone        String
   photoUrl     String?
   photo        String?  @db.Text
-  status       String   @default("NEW")
+  status       String   @default("REVIEW")
   note         String?
   data         Json
   createdAt    DateTime @default(now())
