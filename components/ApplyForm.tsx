@@ -75,7 +75,8 @@ export default function ApplyForm() {
     const e: Record<string, string> = {};
     for (const f of s?.fields || []) {
       if (f.showIf && !f.showIf(v)) continue;
-      const val = String(v[f.name] ?? "").trim();
+      let val = String(v[f.name] ?? "").trim();
+      if (f.type === "jdate" && val.split("/").some((x) => !x)) val = "";
       if (f.required && !val) e[f.name] = "این فیلد الزامی است.";
     }
     for (const t of s?.tables || []) {
